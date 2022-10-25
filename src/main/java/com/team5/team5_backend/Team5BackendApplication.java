@@ -36,6 +36,6 @@ public class Team5BackendApplication {
     }
     @DeleteMapping("/delete")
     void delete(){
-        
+
     }
 }
