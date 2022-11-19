@@ -87,7 +87,7 @@ public class DB {
         user.addColumn(USER_TBL_COL_FMY_ACCOUNT,USER_TBL_COL_USER_TYPE, Bytes.toBytes(u.getUserType()));
         user.addColumn(USER_TBL_COL_FMY_ACCOUNT,USER_TBL_COL_CREATE_TIME, Bytes.toBytes(u.getCreatedTime()));
         user.addColumn(USER_TBL_COL_FMY_PWD,USER_TBL_COL_SALT, Bytes.toBytes(u.getSalt()));
-        user.addColumn(USER_TBL_COL_FMY_ACCOUNT,USER_TBL_COL_HASH, Bytes.toBytes(u.getHash()));
+        user.addColumn(USER_TBL_COL_FMY_PWD,USER_TBL_COL_HASH, Bytes.toBytes(u.getHash()));
 
         userTbl.put(user);
 
