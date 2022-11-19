@@ -26,7 +26,7 @@ public class DB {
     private static final byte[] URL_TBL_COL_OWNER = Bytes.toBytes("UserID");
 
     private static final byte[] USER_TBL = Bytes.toBytes("User");
-    private static final byte[] USER_TBL_COL_FMY_ACCOUNT = Bytes.toBytes("User");
+    private static final byte[] USER_TBL_COL_FMY_ACCOUNT = Bytes.toBytes("Account");
     private static final byte[] USER_TBL_COL_EMAIL_ADDR = Bytes.toBytes("EmailAddress");
     private static final byte[] USER_TBL_COL_USER_TYPE = Bytes.toBytes("UserType");
     private static final byte[] USER_TBL_COL_CREATE_TIME = Bytes.toBytes("CreatedTime");
