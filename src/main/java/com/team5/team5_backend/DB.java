@@ -17,7 +17,7 @@ import java.io.IOException;
 
 public class DB {
 
-    private static final byte[] URL_TBL = Bytes.toBytes("Url");
+    private static final byte[] URL_TBL = Bytes.toBytes("team5-url-test");
     private static final byte[] URL_TBL_COL_FMY_URL = Bytes.toBytes("Url");
     private static final byte[] URL_TBL_COL_LONG_URL = Bytes.toBytes("LongUrl");
     private static final byte[] URL_TBL_COL_SHORT_URL = Bytes.toBytes("ShortUrl");
@@ -25,7 +25,7 @@ public class DB {
     private static final byte[] URL_TBL_COL_FMY_OWNER = Bytes.toBytes("Owner");
     private static final byte[] URL_TBL_COL_OWNER = Bytes.toBytes("UserID");
 
-    private static final byte[] USER_TBL = Bytes.toBytes("User");
+    private static final byte[] USER_TBL = Bytes.toBytes("team5-user-test");
     private static final byte[] USER_TBL_COL_FMY_ACCOUNT = Bytes.toBytes("Account");
     private static final byte[] USER_TBL_COL_EMAIL_ADDR = Bytes.toBytes("EmailAddress");
     private static final byte[] USER_TBL_COL_USER_TYPE = Bytes.toBytes("UserType");

@@ -1,10 +1,14 @@
 package com.team5.team5_backend;
 
+import com.team5.team5_backend.table_object.User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 
 // To run the application use control + r
@@ -21,8 +25,33 @@ public class Team5BackendApplication {
     @Value("${message}")
     String message;
 
+    @Autowired
+    Controller controller;
+
     @GetMapping(value = "demo")
     public ResponseEntity<String> displayHelloMessage() {
+        try {
+            if (controller.createUser()){
+                return ResponseEntity.ok("Successfully create a row in the user table");
+            } else {
+                return ResponseEntity.ok("Not able to create a row in the user table");
+            }
+        } catch (IOException e) {
+            System.err.println("Exception while running bigtable connection and creation: " + e.getMessage());
+        }
+
+        return ResponseEntity.ok(message);
+    }
+
+    @GetMapping("/getUser")
+    public ResponseEntity<String> getUser(@RequestParam(value = "userId") String userId) {
+        try {
+            User user = controller.getUserInfo();
+            return ResponseEntity.ok(user.getEmailAddress());
+        } catch (IOException e) {
+            System.err.println("Exception while getting user info: " + e.getMessage());
+        }
+
         return ResponseEntity.ok(message);
     }
 
