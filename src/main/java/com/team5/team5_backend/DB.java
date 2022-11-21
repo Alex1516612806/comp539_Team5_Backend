@@ -16,8 +16,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 import java.io.IOException;
 
 public class DB {
-
-    private static final byte[] URL_TBL = Bytes.toBytes("team5-url-test");
+    private static final byte[] URL_TBL = Bytes.toBytes("team5-url-test"); // Table name is here
     private static final byte[] URL_TBL_COL_FMY_URL = Bytes.toBytes("Url");
     private static final byte[] URL_TBL_COL_LONG_URL = Bytes.toBytes("LongUrl");
     private static final byte[] URL_TBL_COL_SHORT_URL = Bytes.toBytes("ShortUrl");
@@ -25,7 +24,7 @@ public class DB {
     private static final byte[] URL_TBL_COL_FMY_OWNER = Bytes.toBytes("Owner");
     private static final byte[] URL_TBL_COL_OWNER = Bytes.toBytes("UserID");
 
-    private static final byte[] USER_TBL = Bytes.toBytes("team5-user-test");
+    private static final byte[] USER_TBL = Bytes.toBytes("team5-user-test"); // Table name is here
     private static final byte[] USER_TBL_COL_FMY_ACCOUNT = Bytes.toBytes("Account");
     private static final byte[] USER_TBL_COL_EMAIL_ADDR = Bytes.toBytes("EmailAddress");
     private static final byte[] USER_TBL_COL_USER_TYPE = Bytes.toBytes("UserType");
@@ -108,28 +107,26 @@ public class DB {
             String createTime = Bytes.toString(res.getValue(USER_TBL_COL_FMY_ACCOUNT,USER_TBL_COL_CREATE_TIME));
             String salt = Bytes.toString(res.getValue(USER_TBL_COL_FMY_PWD,USER_TBL_COL_SALT));
             String hash = Bytes.toString(res.getValue(USER_TBL_COL_FMY_PWD,USER_TBL_COL_HASH));
-
             return new User(userID, email, userType, createTime, salt, hash);
-
         }
-
         return null;
-
     }
 
     public boolean createUrl(Url u) throws IOException {
-
         Table urlTbl = connection.getTable(TableName.valueOf(URL_TBL));
-
         Put url = new Put(Bytes.toBytes(u.getSha256Val()));
-
         url.addColumn(URL_TBL_COL_FMY_URL,URL_TBL_COL_LONG_URL, Bytes.toBytes(u.getLongUrl()));
         url.addColumn(URL_TBL_COL_FMY_URL,URL_TBL_COL_SHORT_URL, Bytes.toBytes(u.getShortUrl()));
         url.addColumn(URL_TBL_COL_FMY_URL,URL_TBL_COL_EXP_TIME, Bytes.toBytes(u.getExpireTime()));
         url.addColumn(URL_TBL_COL_FMY_OWNER,URL_TBL_COL_OWNER, Bytes.toBytes(u.getUserID()));
-
+        
+        // Check whether it exist or not.
+        byte[] urlID = Bytes.toBytes(u.getSha256Val());
+        if (urlTbl.exists(new Get(urlID))) {
+            return false;
+        }
         urlTbl.put(url);
-
+        System.out.println("Put success");
         return true;
     }
 
@@ -143,15 +140,10 @@ public class DB {
     }
 
     public Url getUrl(String sha256) throws IOException {
-
         byte[] sha256b = Bytes.toBytes(sha256);
-
         Table urlTbl = connection.getTable(TableName.valueOf(URL_TBL));
-
         if (urlTbl.exists(new Get(sha256b))) {
-
             Result res = urlTbl.get(new Get(sha256b));
-
             String longUrl = Bytes.toString(res.getValue(URL_TBL_COL_FMY_URL,URL_TBL_COL_LONG_URL));
             String shortUrl = Bytes.toString(res.getValue(URL_TBL_COL_FMY_URL,URL_TBL_COL_SHORT_URL));
             String expiredTime = Bytes.toString(res.getValue(URL_TBL_COL_FMY_URL,URL_TBL_COL_EXP_TIME));
@@ -159,7 +151,7 @@ public class DB {
 
             return new Url(sha256, longUrl, shortUrl, expiredTime, userID);
         }
-
+        System.out.println("Should not print");
         return null;
     }
 

@@ -1,6 +1,6 @@
 package com.team5.team5_backend;
 
-import com.team5.team5_backend.table_object.User;
+import com.team5.team5_backend.table_object.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 
 
 // To run the application use control + r
@@ -39,7 +40,6 @@ public class Team5BackendApplication {
         } catch (IOException e) {
             System.err.println("Exception while running bigtable connection and creation: " + e.getMessage());
         }
-
         return ResponseEntity.ok(message);
     }
 
@@ -51,7 +51,6 @@ public class Team5BackendApplication {
         } catch (IOException e) {
             System.err.println("Exception while getting user info: " + e.getMessage());
         }
-
         return ResponseEntity.ok(message);
     }
 
@@ -66,13 +65,27 @@ public class Team5BackendApplication {
     }
 
     @PostMapping("/shorten")
-    public String shorten(@RequestParam(value = "name", defaultValue = "World") String name) {
-        return String.format("This is for shorten url" + name);
+    public ResponseEntity<String> shorten(@RequestParam(value = "url") String longUrl) throws NoSuchAlgorithmException {
+        try{
+            if(controller.createUrl(longUrl)){
+                message = controller.generateShortUrl(longUrl);
+            }
+        }catch(IOException e){
+            System.err.println("Exception while compressing the Url: " + e.getMessage());
+        }
+        return ResponseEntity.ok(message);
     }
 
     @GetMapping("/resolve")
-    public String resolve() {
-        return String.format("This is resolve");
+    public ResponseEntity<String> resolve(@RequestParam(value = "url") String shortUrl) throws NoSuchAlgorithmException {
+        try{
+            Url longUrl_Info = controller.getUrlInfo(shortUrl);
+            String shortenUrl = longUrl_Info.getShortUrl();
+            message = shortenUrl;
+        }catch(IOException e){
+            System.err.println("Exception while compressing the Url: " + e.getMessage());
+        }
+        return ResponseEntity.ok(message);
     }
 
     @DeleteMapping("/delete")
