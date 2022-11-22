@@ -1,4 +1,4 @@
-package com.team5.team5_backend.table_object;
+package com.team5.team5_backend.entity;
 
 public class User {
 

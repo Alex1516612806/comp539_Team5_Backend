@@ -1,21 +1,22 @@
-package com.team5.team5_backend;
+package com.team5.team5_backend.database;
 
-import com.google.api.gax.rpc.NotFoundException;
-import com.google.cloud.bigtable.data.v2.models.RowMutation;
 import com.google.cloud.bigtable.hbase.BigtableConfiguration;
-import com.google.cloud.bigtable.hbase.BigtableOptionsFactory;
-import com.team5.team5_backend.table_object.Url;
-import com.team5.team5_backend.table_object.User;
+import com.team5.team5_backend.entity.Url;
+import com.team5.team5_backend.entity.User;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.springframework.context.annotation.Bean;
 
 import java.io.IOException;
 
+@org.springframework.context.annotation.Configuration
 public class DB {
+    private static final String PROJECT_ID = "rice-comp-539-spring-2022";
+    private static final String INSTANCE_ID = "rice-comp-539-shared-table";
     private static final byte[] URL_TBL = Bytes.toBytes("team5-url-test"); // Table name is here
     private static final byte[] URL_TBL_COL_FMY_URL = Bytes.toBytes("Url");
     private static final byte[] URL_TBL_COL_LONG_URL = Bytes.toBytes("LongUrl");
@@ -36,6 +37,11 @@ public class DB {
 
     private static Connection connection = null;
 
+    private static DB DB_SINGLE_INSTANCE;
+
+    public DB(){
+    }
+
     public DB(String projectId, String instanceId) throws IOException {
 
         Configuration config = BigtableConfiguration.configure(projectId, instanceId);
@@ -49,6 +55,14 @@ public class DB {
         createTable(URL_TBL, new byte[][]{URL_TBL_COL_FMY_URL, URL_TBL_COL_FMY_OWNER});
         createTable(USER_TBL, new byte[][]{USER_TBL_COL_FMY_ACCOUNT, USER_TBL_COL_FMY_PWD});
 
+    }
+
+    @Bean
+    public synchronized static DB getInstance() throws IOException {
+        if(DB_SINGLE_INSTANCE == null) {
+            DB_SINGLE_INSTANCE = new DB(PROJECT_ID, INSTANCE_ID);
+        }
+        return DB_SINGLE_INSTANCE;
     }
 
     private void createTable(byte[] tableId, byte[][] columnFamilies) throws IOException {

@@ -1,8 +1,4 @@
-package com.team5.team5_backend.table_object;
-
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+package com.team5.team5_backend.entity;
 
 public class Url {
     private String sha256Val;

@@ -1,6 +1,8 @@
 package com.team5.team5_backend;
 
-import com.team5.team5_backend.table_object.*;
+import com.team5.team5_backend.entity.*;
+import com.team5.team5_backend.service.UrlService;
+import com.team5.team5_backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -27,12 +29,14 @@ public class Team5BackendApplication {
     String message;
 
     @Autowired
-    Controller controller;
+    UrlService urlService;
+    @Autowired
+    UserService userService;
 
     @GetMapping(value = "demo")
     public ResponseEntity<String> displayHelloMessage() {
         try {
-            if (controller.createUser()){
+            if (userService.createUser()){
                 return ResponseEntity.ok("Successfully create a row in the user table");
             } else {
                 return ResponseEntity.ok("Not able to create a row in the user table");
@@ -46,7 +50,7 @@ public class Team5BackendApplication {
     @GetMapping("/getUser")
     public ResponseEntity<String> getUser(@RequestParam(value = "userId") String userId) {
         try {
-            User user = controller.getUserInfo();
+            User user = userService.getUserInfo();
             return ResponseEntity.ok(user.getEmailAddress());
         } catch (IOException e) {
             System.err.println("Exception while getting user info: " + e.getMessage());
@@ -67,8 +71,8 @@ public class Team5BackendApplication {
     @PostMapping("/shorten")
     public ResponseEntity<String> shorten(@RequestParam(value = "url") String longUrl) throws NoSuchAlgorithmException {
         try{
-            if(controller.createUrl(longUrl)){
-                message = controller.generateShortUrl(longUrl);
+            if(urlService.createUrl(longUrl)){
+                message = urlService.generateShortUrl(longUrl);
             }
         }catch(IOException e){
             System.err.println("Exception while compressing the Url: " + e.getMessage());
@@ -79,7 +83,7 @@ public class Team5BackendApplication {
     @GetMapping("/resolve")
     public ResponseEntity<String> resolve(@RequestParam(value = "url") String shortUrl) throws NoSuchAlgorithmException {
         try{
-            Url longUrl_Info = controller.getUrlInfo(shortUrl);
+            Url longUrl_Info = urlService.getUrlInfo(shortUrl);
             String shortenUrl = longUrl_Info.getShortUrl();
             message = shortenUrl;
         }catch(IOException e){
