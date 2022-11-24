@@ -7,11 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 
 // To run the application use control + r
@@ -68,28 +70,40 @@ public class Team5BackendApplication {
         return String.format("This is team 5");
     }
 
-    @PostMapping("/shorten")
-    public ResponseEntity<String> shorten(@RequestParam(value = "url") String longUrl) throws NoSuchAlgorithmException {
+    @GetMapping("/shorten")
+    public ResponseEntity<Url> shorten(@RequestParam(value = "url") String longUrl) throws NoSuchAlgorithmException {
         try{
-            if(urlService.createUrl(longUrl)){
-                message = urlService.generateShortUrl(longUrl);
+            Url returnUrl =null;
+            if (urlService.containsUrl(longUrl)){
+                returnUrl= urlService.getUrlInfo(longUrl);
+            } else {
+                returnUrl=urlService.createUrl(longUrl);
             }
+            return ResponseEntity.ok(returnUrl);
         }catch(IOException e){
             System.err.println("Exception while compressing the Url: " + e.getMessage());
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
-        return ResponseEntity.ok(message);
     }
 
     @GetMapping("/resolve")
-    public ResponseEntity<String> resolve(@RequestParam(value = "url") String shortUrl) throws NoSuchAlgorithmException {
+    public ResponseEntity<Url> resolve(@RequestParam(value = "url") String shortUrl) throws NoSuchAlgorithmException {
         try{
-            Url longUrl_Info = urlService.getUrlInfo(shortUrl);
-            String shortenUrl = longUrl_Info.getShortUrl();
-            message = shortenUrl;
+            Url returnUrl = null;
+            if (urlService.containsUrlRecord(shortUrl)){
+                returnUrl=urlService.getUrlInfoFromShortUrl(shortUrl);
+            }
+            return ResponseEntity.ok(returnUrl);
         }catch(IOException e){
             System.err.println("Exception while compressing the Url: " + e.getMessage());
+            return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
         }
-        return ResponseEntity.ok(message);
+    }
+
+    @GetMapping("/getAllUrlWithinLastOneHour")
+    public ResponseEntity<List<Url>> getRecordsOfUrl() {
+        List<Url> urlList = urlService.getUrlWithinLastOneHour();
+        return ResponseEntity.ok(urlList);
     }
 
     @DeleteMapping("/delete")

@@ -60,4 +60,8 @@ public class Url {
     public void setUserID(String userID) {
         this.userID = userID;
     }
+
+    public String toString() {
+        return sha256Val + " " + longUrl + " " + shortUrl + " " + expireTime + " " + userID + "\n";
+    }
 }

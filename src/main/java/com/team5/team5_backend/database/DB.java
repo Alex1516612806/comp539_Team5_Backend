@@ -12,6 +12,10 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.springframework.context.annotation.Bean;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 @org.springframework.context.annotation.Configuration
 public class DB {
@@ -115,7 +119,6 @@ public class DB {
 
         if (userTbl.exists(new Get(userIDb))) {
             Result res = userTbl.get(new Get(userIDb));
-
             String email = Bytes.toString(res.getValue(USER_TBL_COL_FMY_ACCOUNT,USER_TBL_COL_EMAIL_ADDR));
             String userType = Bytes.toString(res.getValue(USER_TBL_COL_FMY_ACCOUNT,USER_TBL_COL_USER_TYPE));
             String createTime = Bytes.toString(res.getValue(USER_TBL_COL_FMY_ACCOUNT,USER_TBL_COL_CREATE_TIME));
@@ -126,21 +129,22 @@ public class DB {
         return null;
     }
 
+
     public boolean createUrl(Url u) throws IOException {
         Table urlTbl = connection.getTable(TableName.valueOf(URL_TBL));
+        // Check whether it exist or not.
+        byte[] urlID = Bytes.toBytes(u.getSha256Val());
+        if (urlTbl.exists(new Get(urlID))) {
+            System.out.println("the url exists");
+            return false;
+        }
         Put url = new Put(Bytes.toBytes(u.getSha256Val()));
         url.addColumn(URL_TBL_COL_FMY_URL,URL_TBL_COL_LONG_URL, Bytes.toBytes(u.getLongUrl()));
         url.addColumn(URL_TBL_COL_FMY_URL,URL_TBL_COL_SHORT_URL, Bytes.toBytes(u.getShortUrl()));
         url.addColumn(URL_TBL_COL_FMY_URL,URL_TBL_COL_EXP_TIME, Bytes.toBytes(u.getExpireTime()));
         url.addColumn(URL_TBL_COL_FMY_OWNER,URL_TBL_COL_OWNER, Bytes.toBytes(u.getUserID()));
-        
-        // Check whether it exist or not.
-        byte[] urlID = Bytes.toBytes(u.getSha256Val());
-        if (urlTbl.exists(new Get(urlID))) {
-            return false;
-        }
         urlTbl.put(url);
-        System.out.println("Put success");
+        System.out.println("insert success");
         return true;
     }
 
@@ -158,15 +162,49 @@ public class DB {
         Table urlTbl = connection.getTable(TableName.valueOf(URL_TBL));
         if (urlTbl.exists(new Get(sha256b))) {
             Result res = urlTbl.get(new Get(sha256b));
-            String longUrl = Bytes.toString(res.getValue(URL_TBL_COL_FMY_URL,URL_TBL_COL_LONG_URL));
-            String shortUrl = Bytes.toString(res.getValue(URL_TBL_COL_FMY_URL,URL_TBL_COL_SHORT_URL));
-            String expiredTime = Bytes.toString(res.getValue(URL_TBL_COL_FMY_URL,URL_TBL_COL_EXP_TIME));
-            String userID = Bytes.toString(res.getValue(URL_TBL_COL_FMY_OWNER,URL_TBL_COL_OWNER));
-
-            return new Url(sha256, longUrl, shortUrl, expiredTime, userID);
+            return convertToUrl(res);
         }
-        System.out.println("Should not print");
         return null;
+    }
+
+    private Url convertToUrl(Result urlResult) {
+        String sha256 = Bytes.toString(urlResult.getRow());
+        String longUrl = Bytes.toString(urlResult.getValue(URL_TBL_COL_FMY_URL,URL_TBL_COL_LONG_URL));
+        String shortUrl = Bytes.toString(urlResult.getValue(URL_TBL_COL_FMY_URL,URL_TBL_COL_SHORT_URL));
+        String expiredTime = Bytes.toString(urlResult.getValue(URL_TBL_COL_FMY_URL,URL_TBL_COL_EXP_TIME));
+        String userID = Bytes.toString(urlResult.getValue(URL_TBL_COL_FMY_OWNER,URL_TBL_COL_OWNER));
+        return new Url(sha256, longUrl, shortUrl, expiredTime, userID);
+    }
+
+    public List<Url> filterUrlLimitTimestampRange() {
+        List<Url> urlList = new ArrayList<>();
+        // A filter that matches cells whose timestamp is from an hour ago or earlier
+        // Get a time representing one hour ago
+        long minTimestamp = Instant.now().minus(1, ChronoUnit.HOURS).toEpochMilli();
+        long maxTimeStamp = Instant.now().toEpochMilli();
+        try {
+            Scan scan = new Scan().setTimeRange(minTimestamp, maxTimeStamp).setMaxVersions();
+            List<Result> results = readWithFilter(scan);
+            for (Result result:results){
+                urlList.add(convertToUrl(result));
+            }
+        } catch (IOException e) {
+            System.out.println("There was an issue with your timestamp \n" + e.toString());
+        }
+        return urlList;
+    }
+
+    public List<Result> readWithFilter(Scan scan) throws IOException {
+        // Initialize client that will be used to send requests. This client only needs to be created
+        // once, and can be reused for multiple requests. After completing all of your requests, call
+        // the "close" method on the client to safely clean up any remaining background resources.
+            Table table = connection.getTable(TableName.valueOf(URL_TBL));
+            ResultScanner rows = table.getScanner(scan);
+            List<Result> results =new ArrayList<>();
+            for (Result row : rows) {
+                results.add(row);
+            }
+            return results;
     }
 
 }
