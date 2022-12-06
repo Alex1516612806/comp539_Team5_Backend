@@ -10,6 +10,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.view.RedirectView;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -105,6 +107,26 @@ public class Team5BackendApplication {
         List<Url> urlList = urlService.getUrlWithinLastOneHour();
         return ResponseEntity.ok(urlList);
     }
+
+    @GetMapping("/go")
+    public RedirectView redirectWithUsingRedirectView(
+        @RequestParam(value = "id") String shortUrl) throws NoSuchAlgorithmException, IOException {
+        // attributes.addFlashAttribute("flashAttribute", "redirectWithRedirectView");
+        // attributes.addAttribute("attribute", "redirectWithRedirectView");
+        return new RedirectView("https://www.google.com/");
+        // try{
+        //     // Url returnUrl = null;
+        //     // if (urlService.containsUrlRecord(shortUrl)){
+        //     //     returnUrl=urlService.getUrlInfoFromShortUrl(shortUrl);
+        //     //     System.out.println(returnUrl.getLongUrl());
+        //     //     return new RedirectView("https://www.google.com/");
+        //     // }
+        // }catch(IOException e){
+        //     System.err.println("Exception while compressing the Url: " + e.getMessage());
+        //     return new RedirectView("https://www.google.com/");
+        // }
+    }
+    
 
     @DeleteMapping("/delete")
     void delete() {
