@@ -19,6 +19,7 @@ import java.util.List;
 // To run the application use control + r
 // Minimize the run window by using command + 4
 // Stop the application use command + F2
+@CrossOrigin(origins = {"http://localhost:3000", "https://comp539-team5.surge.sh"}) // allow origins from the frontend.
 @SpringBootApplication
 @RestController
 public class Team5BackendApplication {
