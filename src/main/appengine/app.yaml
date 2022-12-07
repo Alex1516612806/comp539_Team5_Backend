@@ -13,21 +13,19 @@
 
 runtime: java
 env : flex
-inbound_services:
-  - warmup
-derived_file_type:
-  - java_precompiled
-
-runtime_config:
-  jdk: openjdk8
+#inbound_services:
+#  - warmup
+#derived_file_type:
+#  - java_precompiled
+#
+#runtime_config:
+#  jdk: openjdk8
 
 handlers:
   - url: /.*
     script: this field is required, but ignored
 
-manual_scaling:
-  instances: 1
+service_account: team5-143@rice-comp-539-spring-2022.iam.gserviceaccount.com
+
 resources:
-  cpu: 1
-  memory_gb: 0.5
-  disk_size_gb: 10
+  memory_gb: 4

@@ -2,8 +2,7 @@ package com.team5.team5_backend.entity;
 
 public class User {
 
-    private String userID, emailAddress, userType, salt, hash;
-    private String createdTime; // TODO: type?
+    private String userID, emailAddress, userType, salt, hash, createdTime;
 
     public User(String userID, String emailAddress, String userType, String createdTime, String salt, String hash) {
         this.userID = userID;

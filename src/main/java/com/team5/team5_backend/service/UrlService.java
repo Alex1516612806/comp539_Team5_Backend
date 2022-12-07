@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
 
@@ -26,6 +27,7 @@ public class UrlService {
     private static final String Test_URL_userID = UserService.TEST_USER_ID;
     private static final int COMPRESSION_URL_SIZE = 7;
     private static final String SHORT_URL_PREFIX = "https://Mavericks/";
+    private static final int SECONDS_IN_SEVEN_DAYS=7*24*3600;
 
     private String hashSha256Val(String longUrl) throws NoSuchAlgorithmException{
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -49,9 +51,9 @@ public class UrlService {
     }
 
     //create a new record for given long url
-    public Url createUrl(String longUrl) throws IOException, NoSuchAlgorithmException{
-        // TODO: Get the user info first.
-        Url newUrl = new Url(generateRowkeyForLongUrl(longUrl), longUrl,generateShortUrl(longUrl),Test_URL_expireTime,Test_URL_userID);
+    public Url createUrl(String longUrl,String userName) throws IOException, NoSuchAlgorithmException{
+        String expireTime = Instant.now().plusSeconds(SECONDS_IN_SEVEN_DAYS).toString();
+        Url newUrl = new Url(generateRowkeyForLongUrl(longUrl), longUrl,generateShortUrl(longUrl),expireTime,userName);
         myDb.createUrl(newUrl);
         return newUrl;
     }
@@ -72,6 +74,14 @@ public class UrlService {
 
     public Url getUrlInfoFromShortUrl(String shortUrl) throws IOException {
         return myDb.getUrl(getRowkeyFromShortUrl(shortUrl));
+    }
+
+    public boolean containsUrlRecordForShortKey(String rowKey) throws IOException {
+        return myDb.touchUrl(rowKey);
+    }
+
+    public Url getUrlInfoFromShortKey(String rowKey) throws IOException {
+        return myDb.getUrl(rowKey);
     }
 
     public List<Url> getUrlWithinLastOneHour() {

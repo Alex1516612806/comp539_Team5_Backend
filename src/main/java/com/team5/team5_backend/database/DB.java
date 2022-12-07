@@ -112,6 +112,7 @@ public class DB {
 
     }
 
+    //return user info if exists otherwise return null
     public User getUser(String userID) throws IOException {
         Table userTbl = connection.getTable(TableName.valueOf(USER_TBL));
 

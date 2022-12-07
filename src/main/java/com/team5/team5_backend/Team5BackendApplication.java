@@ -1,12 +1,17 @@
 package com.team5.team5_backend;
 
 import com.team5.team5_backend.entity.*;
+import com.team5.team5_backend.request.LoginReq;
+import com.team5.team5_backend.request.UserCreateReq;
+import com.team5.team5_backend.response.CreationResponse;
 import com.team5.team5_backend.service.UrlService;
 import com.team5.team5_backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,49 +43,48 @@ public class Team5BackendApplication {
     @Autowired
     UserService userService;
 
-    @GetMapping(value = "demo")
-    public ResponseEntity<String> displayHelloMessage() {
+
+    @GetMapping("/login")
+    public ResponseEntity<String> login(@RequestBody LoginReq loginReq) {
         try {
-            if (userService.createUser()){
-                return ResponseEntity.ok("Successfully create a row in the user table");
+            User user=userService.getUserInfo(loginReq.getUsername());
+            if (user==null){
+                return ResponseEntity.ok("the username doesn't exist");
+            } else if(!userService.loginUser(user,loginReq.getPassword())){
+                return ResponseEntity.ok("The password is wrong");
             } else {
-                return ResponseEntity.ok("Not able to create a row in the user table");
+                return ResponseEntity.ok("Log in successfully");
             }
         } catch (IOException e) {
-            System.err.println("Exception while running bigtable connection and creation: " + e.getMessage());
-        }
-        return ResponseEntity.ok(message);
-    }
-
-    @GetMapping("/getUser")
-    public ResponseEntity<String> getUser(@RequestParam(value = "userId") String userId) {
-        try {
-            User user = userService.getUserInfo();
-            return ResponseEntity.ok(user.getEmailAddress());
-        } catch (IOException e) {
             System.err.println("Exception while getting user info: " + e.getMessage());
+            return ResponseEntity.ok("exception while getting user info");
         }
-        return ResponseEntity.ok(message);
     }
 
-    @GetMapping("/hello")
-    public String hello(@RequestParam(value = "names", defaultValue = "World") String name) {
-        return String.format("Hello %s!", name);
-    }
-
-    @GetMapping("/teamInfo")
-    public String teamInfo() {
-        return String.format("This is team 5");
+    @PostMapping("/user")
+    public ResponseEntity<CreationResponse> createUser(@RequestBody UserCreateReq userCreateReq) throws IOException {
+        CreationResponse response=userService.createUser(
+                userCreateReq.getUserName(),
+                userCreateReq.getEmail(),
+                userCreateReq.getPassword()
+        );
+        // a user is created in the bigtable
+        if(response.getUser()!=null){
+            return new ResponseEntity<>(response,new HttpHeaders(), HttpStatus.CREATED);
+        }
+        // a user is not be able to created in the bigtable
+        return new ResponseEntity<>(response,new HttpHeaders(), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping("/shorten")
-    public ResponseEntity<Url> shorten(@RequestParam(value = "url") String longUrl) throws NoSuchAlgorithmException {
+    public ResponseEntity<Url> shorten(@RequestParam(value = "url") String longUrl,
+                                       @RequestParam(value = "username") String userName) throws NoSuchAlgorithmException {
         try{
             Url returnUrl =null;
             if (urlService.containsUrl(longUrl)){
                 returnUrl= urlService.getUrlInfo(longUrl);
             } else {
-                returnUrl=urlService.createUrl(longUrl);
+                returnUrl=urlService.createUrl(longUrl,userName);
             }
             return ResponseEntity.ok(returnUrl);
         }catch(IOException e){
@@ -103,34 +107,35 @@ public class Team5BackendApplication {
         }
     }
 
-    @GetMapping("/getAllUrlWithinLastOneHour")
+    //get all urls within last one hour
+    @GetMapping("/url/hour/1")
     public ResponseEntity<List<Url>> getRecordsOfUrl() {
         List<Url> urlList = urlService.getUrlWithinLastOneHour();
         return ResponseEntity.ok(urlList);
     }
 
-    @GetMapping("/go")
-    public RedirectView redirectWithUsingRedirectView(
-        @RequestParam(value = "id") String shortUrl) throws NoSuchAlgorithmException, IOException {
-        // attributes.addFlashAttribute("flashAttribute", "redirectWithRedirectView");
-        // attributes.addAttribute("attribute", "redirectWithRedirectView");
-        return new RedirectView("https://www.google.com/");
-        // try{
-        //     // Url returnUrl = null;
-        //     // if (urlService.containsUrlRecord(shortUrl)){
-        //     //     returnUrl=urlService.getUrlInfoFromShortUrl(shortUrl);
-        //     //     System.out.println(returnUrl.getLongUrl());
-        //     //     return new RedirectView("https://www.google.com/");
-        //     // }
-        // }catch(IOException e){
-        //     System.err.println("Exception while compressing the Url: " + e.getMessage());
-        //     return new RedirectView("https://www.google.com/");
-        // }
+    @GetMapping("/route")
+    public RedirectView redirectWithUsingRedirectView(@RequestParam(value = "id") String rowKey) throws NoSuchAlgorithmException, IOException {
+         try{
+              if (urlService.containsUrlRecordForShortKey(rowKey)){
+                  Url returnUrl=urlService.getUrlInfoFromShortKey(rowKey);
+                  return new RedirectView(returnUrl.getLongUrl());
+              } else {
+                  return new RedirectView("https://www.google.com/");
+              }
+         }catch(IOException e){
+             System.err.println("Exception while compressing the Url: " + e.getMessage());
+             return new RedirectView("https://www.google.com/");
+         }
     }
-    
 
     @DeleteMapping("/delete")
     void delete() {
 
+    }
+
+    @GetMapping("/hello")
+    public String hello(@RequestParam(value = "names", defaultValue = "World") String name) {
+        return String.format("Hello %s!", name);
     }
 }
