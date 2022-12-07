@@ -37,12 +37,21 @@ public class UrlService {
         return hashVal;
     }
 
-    private String generateRowkeyForLongUrl(String longUrl) throws NoSuchAlgorithmException {
-        return hashSha256Val(longUrl).substring(0,COMPRESSION_URL_SIZE);
+    private String generateRowkeyForLongUrl(String longUrl) throws NoSuchAlgorithmException, IOException {
+        int size = COMPRESSION_URL_SIZE;
+        String hash = hashSha256Val(longUrl);
+        while (size <= hash.length()) {
+            String rowKey = hash.substring(0,size);
+            if (!containsUrlRecordForShortKey(rowKey)) {
+                return rowKey;
+            }
+            size += 1;
+        }
+        return hash;
     }
 
     //generate short url according to the long url
-    private String generateShortUrl(String longUrl) throws NoSuchAlgorithmException{
+    private String generateShortUrl(String longUrl) throws NoSuchAlgorithmException, IOException{
         return SHORT_URL_PREFIX+ generateRowkeyForLongUrl(longUrl);
     }
 
