@@ -44,7 +44,7 @@ public class Team5BackendApplication {
     UserService userService;
 
 
-    @GetMapping("/login")
+    @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginReq loginReq) {
         try {
             User user=userService.getUserInfo(loginReq.getUsername());
@@ -115,7 +115,7 @@ public class Team5BackendApplication {
     }
 
     @GetMapping("/route")
-    public RedirectView redirectWithUsingRedirectView(@RequestParam(value = "id") String rowKey) throws NoSuchAlgorithmException, IOException {
+    public RedirectView redirectWithUsingRedirectView(@RequestParam(value = "id") String rowKey) throws IOException {
          try{
               if (urlService.containsUrlRecordForShortKey(rowKey)){
                   Url returnUrl=urlService.getUrlInfoFromShortKey(rowKey);
