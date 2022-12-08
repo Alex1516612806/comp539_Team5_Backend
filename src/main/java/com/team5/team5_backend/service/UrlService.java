@@ -50,6 +50,14 @@ public class UrlService {
         return hash;
     }
 
+    private String getRowKeyFromLongUrl(String longUrl) throws NoSuchAlgorithmException {
+        return getRowKeyFromLongUrlExtend(longUrl,COMPRESSION_URL_SIZE);
+    }
+
+    private String getRowKeyFromLongUrlExtend(String longUrl, int size) throws NoSuchAlgorithmException {
+        return hashSha256Val(longUrl).substring(0,size);
+    }
+
     //generate short url according to the long url
     private String generateShortUrl(String longUrl) throws NoSuchAlgorithmException, IOException{
         return SHORT_URL_PREFIX+ generateRowkeyForLongUrl(longUrl);
@@ -68,11 +76,11 @@ public class UrlService {
     }
 
     public Url getUrlInfo(String longUrl)throws IOException, NoSuchAlgorithmException{
-        return myDb.getUrl(generateRowkeyForLongUrl(longUrl));
+        return myDb.getUrl(getRowKeyFromLongUrl(longUrl));
     }
 
     public boolean containsUrl(String longUrl) throws NoSuchAlgorithmException, IOException {
-        String rowKey = generateRowkeyForLongUrl(longUrl);
+        String rowKey = getRowKeyFromLongUrl(longUrl);
         return myDb.touchUrl(rowKey);
     }
 
