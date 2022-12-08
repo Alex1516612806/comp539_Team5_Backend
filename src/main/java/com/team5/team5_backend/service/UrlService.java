@@ -60,7 +60,7 @@ public class UrlService {
 
     //generate short url according to the long url
     private String generateShortUrl(String longUrl) throws NoSuchAlgorithmException, IOException{
-        return SHORT_URL_PREFIX+ generateRowkeyForLongUrl(longUrl);
+        return SHORT_URL_PREFIX+ getRowkeyFromShortUrl(longUrl);
     }
 
     private String getRowkeyFromShortUrl(String shortUrl) {
@@ -70,7 +70,7 @@ public class UrlService {
     //create a new record for given long url
     public Url createUrl(String longUrl,String userName) throws IOException, NoSuchAlgorithmException{
         String expireTime = Instant.now().plusSeconds(SECONDS_IN_SEVEN_DAYS).toString();
-        Url newUrl = new Url(generateRowkeyForLongUrl(longUrl), longUrl,generateShortUrl(longUrl),expireTime,userName);
+        Url newUrl = new Url(getRowKeyFromLongUrl(longUrl), longUrl,generateShortUrl(longUrl),expireTime,userName);
         myDb.createUrl(newUrl);
         return newUrl;
     }

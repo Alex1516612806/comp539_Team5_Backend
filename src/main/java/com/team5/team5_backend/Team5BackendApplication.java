@@ -130,7 +130,7 @@ public class Team5BackendApplication {
     }
 
     @DeleteMapping("/delete")
-    void delete() {
+    void delete(@RequestParam(value = "shortUrl") String shortUrl) {
 
     }
 
