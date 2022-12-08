@@ -168,6 +168,13 @@ public class DB {
         return null;
     }
 
+    public void deleteUrl(String sha256) throws IOException {
+        byte[] sha256b = Bytes.toBytes(sha256);
+        Table urlTbl = connection.getTable(TableName.valueOf(URL_TBL));
+        Delete deletedRow = new Delete(sha256b);
+        urlTbl.delete(deletedRow);
+    }
+
     private Url convertToUrl(Result urlResult) {
         String sha256 = Bytes.toString(urlResult.getRow());
         String longUrl = Bytes.toString(urlResult.getValue(URL_TBL_COL_FMY_URL,URL_TBL_COL_LONG_URL));

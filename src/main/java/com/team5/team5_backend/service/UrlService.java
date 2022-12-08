@@ -60,7 +60,7 @@ public class UrlService {
 
     //generate short url according to the long url
     private String generateShortUrl(String longUrl) throws NoSuchAlgorithmException, IOException{
-        return SHORT_URL_PREFIX+ getRowkeyFromShortUrl(longUrl);
+        return SHORT_URL_PREFIX+ getRowKeyFromLongUrl(longUrl);
     }
 
     private String getRowkeyFromShortUrl(String shortUrl) {
@@ -103,5 +103,19 @@ public class UrlService {
 
     public List<Url> getUrlWithinLastOneHour() {
         return myDb.filterUrlLimitTimestampRange();
+    }
+
+    public boolean deleteUrlRecord(String shortUrl, String userName) {
+        String rowKey=getRowkeyFromShortUrl(shortUrl);
+        try {
+            Url deletedUrl = getUrlInfoFromShortUrl(shortUrl);
+            if(!deletedUrl.getUserID().equals(userName)){
+                return false;
+            }
+            myDb.deleteUrl(rowKey);
+        } catch (IOException e) {
+            return false;
+        }
+        return true;
     }
 }

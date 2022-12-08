@@ -130,8 +130,17 @@ public class Team5BackendApplication {
     }
 
     @DeleteMapping("/delete")
-    void delete(@RequestParam(value = "shortUrl") String shortUrl) {
-
+    public ResponseEntity<String> delete(@RequestParam(value = "shortUrl") String shortUrl,
+                                         @RequestParam(value = "userName") String userName) throws NoSuchAlgorithmException, IOException {
+        if(urlService.containsUrlRecord(shortUrl)){
+            if (urlService.deleteUrlRecord(shortUrl,userName)){
+                return ResponseEntity.ok("Delete successfully");
+            } {
+                return ResponseEntity.ok("Delete error");
+            }
+        } else {
+            return ResponseEntity.ok("The short url doesn't exist");
+        }
     }
 
     @GetMapping("/hello")
